@@ -1,0 +1,366 @@
+{
+  "name": "engineering-coach",
+  "displayName": "Engineering Coach",
+  "description": "Analyze your AI coding assistant usage across VS Code, Xcode, Claude, Codex, and OpenCode. Read-only, zero telemetry.",
+  "version": "0.1.0",
+  "publisher": "ai-engineer-coach",
+  "author": {
+    "name": "Sanjay Singh, Joy Distelbrink, Tamas Boncz, Aymen Furter"
+  },
+  "license": "MIT",
+  "icon": "assets/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mashhoodr/engineering-coach.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mashhoodr/engineering-coach/issues"
+  },
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "copilot",
+    "analytics",
+    "harness",
+    "claude",
+    "codex",
+    "opencode",
+    "productivity",
+    "github"
+  ],
+  "activationEvents": [
+    "onCommand:aiEngineerCoach.open",
+    "onCommand:aiEngineerCoach.reload",
+    "onCommand:aiEngineerCoach.exportSummary",
+    "onCommand:aiEngineerCoach.reviewLocalRules",
+    "onView:aiEngineerCoach.welcome"
+  ],
+  "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In untrusted workspaces, project-level rules and metrics (.ai-engineer-coach/) are not loaded. Built-in and personal rules still work."
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiEngineerCoach.open",
+        "title": "AI Engineer Coach: Open Dashboard",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "aiEngineerCoach.reload",
+        "title": "AI Engineer Coach: Reload Data",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "aiEngineerCoach.exportSummary",
+        "title": "AI Engineer Coach: Export Summary",
+        "icon": "$(export)"
+      },
+      {
+        "command": "aiEngineerCoach.reviewLocalRules",
+        "title": "AI Engineer Coach: Review Local Rule Approvals",
+        "icon": "$(shield)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aiEngineerCoach",
+          "title": "AI Engineer Coach",
+          "icon": "$(graph)"
+        }
+      ]
+    },
+    "views": {
+      "aiEngineerCoach": [
+        {
+          "id": "aiEngineerCoach.welcome",
+          "name": "Dashboard",
+          "type": "webview"
+        }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "aiEngineerCoach.aicoach",
+        "fullName": "AI Engineering Coach",
+        "name": "aicoach",
+        "description": "Your AI coding coach — analyze usage patterns, get improvement tips, and track progress",
+        "isSticky": true,
+        "commands": [
+          { "name": "summary", "description": "Get a quick summary of your AI coding usage" },
+          { "name": "improve", "description": "Get improvement recommendations" },
+          { "name": "compare", "description": "Compare your AI coding tools" },
+          { "name": "flow", "description": "Analyze your flow & focus" }
+        ]
+      }
+    ],
+    "languageModelTools": [
+      {
+        "name": "aiEngineerCoach_summary",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Usage Summary",
+        "modelDescription": "Get a high-level summary of AI coding assistant usage including session counts, recommendations, and top anti-patterns.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_activity",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Daily Activity",
+        "modelDescription": "Get daily activity data including requests, LOC, sessions, and harness breakdown.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_credits",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: AI Credits",
+        "modelDescription": "Get AI credit usage with per-model breakdown, daily trend, and most expensive requests.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_codeProduction",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Code Production",
+        "modelDescription": "Get code production metrics: AI vs user LOC, language breakdown, workspace distribution.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_flow",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Flow State",
+        "modelDescription": "Get flow state analysis: deep work scores, best hours, follow-up latency, session continuity.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_patterns",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Anti-Patterns",
+        "modelDescription": "Get detected anti-patterns and practice recommendations with severity and trends.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_insights",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Insights",
+        "modelDescription": "Get advanced insights: learning velocity, intent classification, prompt maturity, sustainable pace.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_wellbeing",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Work-Life Balance",
+        "modelDescription": "Get work-life balance score, time distribution, weekend ratio, and burnout risk.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_workflows",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Workflows",
+        "modelDescription": "Get repeated workflow clusters that could be automated, with draft skill suggestions.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_harnessComparison",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Tool Comparison",
+        "modelDescription": "Compare AI coding tools side-by-side: sessions, requests, LOC, models, cancel rates.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_sessions",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Sessions",
+        "modelDescription": "Browse or search individual coding sessions. Use sessionId for detail, or page/search to browse.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "sessionId": { "type": "string", "description": "Get detail for a specific session" },
+            "page": { "type": "number", "description": "Page number (1-based)" },
+            "pageSize": { "type": "number", "description": "Sessions per page (max 50)" },
+            "search": { "type": "string", "description": "Search term for workspace or message content" },
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      },
+      {
+        "name": "aiEngineerCoach_contextHealth",
+        "tags": ["ai-engineer-coach"],
+        "displayName": "Coach: Context Health",
+        "modelDescription": "Get context management health: compaction, config scores, agentic readiness, instruction quality.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fromDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range start" },
+            "toDate": { "type": "string", "description": "ISO date (YYYY-MM-DD) for range end" },
+            "workspaceId": { "type": "string", "description": "Filter to a workspace ID" },
+            "harness": { "type": "string", "description": "Filter to an AI tool name" }
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "lint": "eslint src/",
+    "bench": "vitest bench",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "analyze:data-inventory": "npx tsx scripts/data-inventory.ts",
+    "analyze:token-inventory": "npx tsx scripts/token-inventory.ts --save",
+    "analyze:context-composition": "npx tsx scripts/explore-context-composition.ts",
+    "analyze:e2e-real-data": "npx tsx scripts/e2e-real-data.ts",
+    "parity": "npx tsx scripts/parse-parity.ts",
+    "analyze:catalog-fetch": "node scripts/test-catalog-fetch.mjs",
+    "smoke-test": "node scripts/smoke-test.mjs",
+    "gen-synth-logs": "npx tsx scripts/generate-synthetic-logs.ts",
+    "test:oom-synth": "npx tsx scripts/oom-repro.ts",
+    "package": "node scripts/package-readme-swap.mjs",
+    "spellcheck": "cspell \"src/**/*.ts\" \"docs/**/*.md\" \"*.md\"",
+    "knip": "knip",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint && npm run spellcheck && npm run knip && npm run lockfile-lint && npm run test",
+    "check-size": "node scripts/check-bundle-size.mjs",
+    "test:e2e": "npx playwright test",
+    "lockfile-lint": "lockfile-lint",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "cspell --no-must-find-files"
+    ],
+    "*.md": [
+      "cspell --no-must-find-files"
+    ]
+  },
+  "engineStrict": true,
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
+    "@types/node": "26.4.0",
+    "@types/vscode": "1.125.0",
+    "@vitest/coverage-v8": "4.1.11",
+    "@vscode/vsce": "3.9.2",
+    "cspell": "10.1.1",
+    "esbuild": "0.28.2",
+    "eslint": "10.9.1",
+    "eslint-plugin-import-x": "4.17.1",
+    "eslint-plugin-no-unsanitized": "4.1.5",
+    "eslint-plugin-unicorn": "74.0.0",
+    "husky": "9.1.7",
+    "jsdom": "29.1.1",
+    "knip": "6.33.0",
+    "lint-staged": "17.4.1",
+    "lockfile-lint": "5.0.1",
+    "preact-render-to-string": "6.7.0",
+    "serve": "14.2.6",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.68.0",
+    "vitest": "4.1.11"
+  },
+  "dependencies": {
+    "chart.js": "4.5.1",
+    "chartjs-chart-treemap": "4.2.0",
+    "htm": "3.1.1",
+    "leo-profanity": "1.9.0",
+    "preact": "10.29.8",
+    "zod": "4.5.4"
+  },
+  "overrides": {
+    "smol-toml": "1.7.1"
+  }
+}
