@@ -11,6 +11,8 @@ import { findClaudeDirs, parseClaudeSessions, parseClaudeSessionsAsync } from '.
 import { findCodexDirs, parseCodexSessions } from './parser-codex';
 import { findOpenCodeDirs, parseOpenCodeSessions } from './parser-opencode';
 import { EditLocIndex } from './edit-loc-diff';
+import * as path from 'node:path';
+import { parseUniversalFile } from './parser-universal';
 
 type WorkspaceMap = Map<string, Workspace>;
 
@@ -24,6 +26,26 @@ interface ExternalHarnessCollector {
   name: string;
   collectSync(ctx: HarnessCollectionContext): void;
   collectAsync?(ctx: HarnessCollectionContext, reportDetail?: (detail: string) => void): Promise<void>;
+}
+
+function findUniversalFiles(tool: 'cursor' | 'antigravity'): string[] {
+  const home = process.env.HOME || process.env.USERPROFILE || '';
+  const roots = tool === 'cursor'
+    ? [path.join(home, '.cursor')]
+    : [path.join(home, '.antigravity'), path.join(home, '.gemini', 'antigravity'), path.join(home, '.config', 'antigravity')];
+  const files: string[] = [];
+  const visit = (dir: string, depth: number): void => {
+    if (depth > 5 || files.length >= 500) return;
+    let entries: fs.Dirent[];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) visit(full, depth + 1);
+      else if (entry.isFile() && /\.(jsonl|ndjson)$/i.test(entry.name)) files.push(full);
+    }
+  };
+  for (const root of roots) visit(root, 0);
+  return files;
 }
 
 function addSession(workspaces: WorkspaceMap, sessions: Session[], session: Session, rootPath: string): void {
@@ -71,6 +93,24 @@ const EXTERNAL_HARNESSES: ExternalHarnessCollector[] = [
       }
     },
   },
+  {
+    name: 'Cursor',
+    collectSync(ctx) {
+      for (const file of findUniversalFiles('cursor')) {
+        const session = parseUniversalFile(file, 'cursor');
+        if (session) addSession(ctx.workspaces, ctx.sessions, session, path.dirname(file));
+      }
+    },
+  },
+  {
+    name: 'Anti-gravity',
+    collectSync(ctx) {
+      for (const file of findUniversalFiles('antigravity')) {
+        const session = parseUniversalFile(file, 'antigravity');
+        if (session) addSession(ctx.workspaces, ctx.sessions, session, path.dirname(file));
+      }
+    },
+  },
 ];
 
 export interface ExternalHarnessProgressHandlers {
@@ -90,7 +130,8 @@ export function hasExternalHarnessSources(): boolean {
   // string and probe relative paths (e.g. `.claude/projects`) under the current
   // working directory, which could report false positives. Bail out instead.
   if (!process.env.HOME && !process.env.USERPROFILE) return false;
-  return findClaudeDirs().length > 0 || findCodexDirs().length > 0 || findOpenCodeDirs().length > 0;
+  return findClaudeDirs().length > 0 || findCodexDirs().length > 0 || findOpenCodeDirs().length > 0
+    || findUniversalFiles('cursor').length > 0 || findUniversalFiles('antigravity').length > 0;
 }
 
 export function collectExternalHarnessesSync(
@@ -112,6 +153,8 @@ export const EXTERNAL_HARNESS_SET = new Set<string>([
   'Claude',
   'Codex',
   'OpenCode',
+  'Cursor',
+  'Antigravity',
 ]);
 
 export async function collectExternalHarnessesAsync(
